@@ -31,6 +31,7 @@
 #============================================================================================#
 
 require "date"
+require "fileutils"
 
 #=======================================================#
 # Class that encapsulates the processing file in memory #
@@ -328,6 +329,11 @@ if not canceled
     filenum = 0
     errors = 0
     files.each() do |x|
+        # Skip files that we have already marked as "failed_"
+        if x.start_with?("failed_")
+            next
+        end
+
         $errors = false
         filenum += 1
         filenumtxt = filenum.to_s.rjust("#{files.size}".length)
@@ -337,7 +343,10 @@ if not canceled
         lines = thisFile.getProcessedLines
         if lines == nil
             $errors = true
-            print "[skipping mail without regular From: line]"
+            print "[skipping mail without regular From: line]   "
+            # Mark files as failed
+            print "Marking #{x} as failed."
+            FileUtils.cp(x, "failed_#{x}");
         else
             lines.each {|line| aFile.puts line}
         end
